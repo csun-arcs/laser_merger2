@@ -16,9 +16,9 @@ def generate_launch_description():
     # and rclcpp parameters (cf https://github.com/ros2/rclcpp/issues/1955).
     # In the code, we simply ignore empty topic names.
     scan_topics = LaunchConfiguration('scan_topics', default="['']")
-    scan_qos_profiles = LaunchConfiguration('scan_qos_profiles', default=["reliable", "reliable"])
+    scan_reliability_policies = LaunchConfiguration('scan_reliability_policies', default="['']")
     point_cloud_topics = LaunchConfiguration('point_cloud_topics', default="['']")
-    point_cloud_qos_profiles = LaunchConfiguration('point_cloud_qos_profiles', default=["reliable", "reliable"])
+    point_cloud_reliability_policies = LaunchConfiguration('point_cloud_reliability_policies', default="['']")
     transform_tolerance = LaunchConfiguration('transform_tolerance', default=0.1)
     rate = LaunchConfiguration('rate', default=30.0)
     queue_size = LaunchConfiguration('queue_size', default=10)
@@ -42,9 +42,9 @@ def generate_launch_description():
             output='screen',
             parameters=[{'target_frame': target_frame},
                         {'scan_topics': scan_topics},
-                        {'scan_qos_profiles': scan_qos_profiles},
+                        {'scan_reliability_policies': scan_reliability_policies},
                         {'point_cloud_topics': point_cloud_topics},
-                        {'point_cloud_qos_profiles': point_cloud_qos_profiles},
+                        {'point_cloud_reliability_policies': point_cloud_reliability_policies},
                         {'transform_tolerance': transform_tolerance},
                         {'rate': rate},
                         {'queue_size': queue_size},

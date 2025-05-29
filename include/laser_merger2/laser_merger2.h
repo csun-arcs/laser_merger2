@@ -80,9 +80,9 @@ class laser_merger2 : public rclcpp::Node
     std::shared_ptr<rclcpp::Rate> rosRate;
     std::string target_frame_;
     std::vector<std::string> scan_topics;
-    std::vector<std::string> scan_qos_profiles;
+    std::vector<std::string> scan_reliability_policies;
     std::vector<std::string> point_cloud_topics;
-    std::vector<std::string> point_cloud_qos_profiles;
+    std::vector<std::string> point_cloud_reliability_policies;
     double tolerance_;
     double rate_;
     int input_queue_size_;

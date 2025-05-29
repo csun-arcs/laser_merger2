@@ -12,9 +12,9 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
 {
     this->declare_parameter<std::string>("target_frame", "base_link");
     this->declare_parameter<std::vector<std::string>>("scan_topics", { "/sick_s30b/laser/scan0", "/sick_s30b/laser/scan1" });
-    this->declare_parameter<std::vector<std::string>>("scan_qos_profiles", { "reliable", "reliable" });
+    this->declare_parameter<std::vector<std::string>>("scan_reliability_policies", { "reliable", "reliable" });
     this->declare_parameter<std::vector<std::string>>("point_cloud_topics", { "/sick_s30b/laser/points0", "/sick_s30b/laser/points1" });
-    this->declare_parameter<std::vector<std::string>>("point_cloud_qos_profiles", { "reliable", "reliable" });
+    this->declare_parameter<std::vector<std::string>>("point_cloud_reliability_policies", { "reliable", "reliable" });
     this->declare_parameter<double>("transform_tolerance", 0.01);
     this->declare_parameter<double>("rate", 30.0);
     this->declare_parameter<int>("queue_size", 20);
@@ -30,9 +30,9 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
 
     this->get_parameter("target_frame", target_frame_);
     this->get_parameter("scan_topics", scan_topics);
-    this->get_parameter("scan_qos_profiles", scan_qos_profiles);
+    this->get_parameter("scan_reliability_policies", scan_reliability_policies);
     this->get_parameter("point_cloud_topics", point_cloud_topics);
-    this->get_parameter("point_cloud_qos_profiles", point_cloud_qos_profiles);
+    this->get_parameter("point_cloud_reliability_policies", point_cloud_reliability_policies);
     this->get_parameter("transform_tolerance", tolerance_);
     this->get_parameter("rate", rate_);
     this->get_parameter("queue_size", input_queue_size_);
@@ -63,26 +63,26 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
         for (size_t i = 0; i < laser_num; ++i)
         {
             const std::string &scan_topic = scan_topics[i];
-            std::string scan_qos_profile_str;
+            std::string scan_reliability_policy_str;
             rclcpp::QoS scan_qos_profile = rclcpp::SensorDataQoS();
 
-            if (i < scan_qos_profiles.size()) {
-                if (scan_qos_profiles[i] == "reliable") {
-                    scan_qos_profile_str = "reliable";
+            if (i < scan_reliability_policies.size()) {
+                if (scan_reliability_policies[i] == "reliable") {
+                    scan_reliability_policy_str = "reliable";
                     scan_qos_profile.reliable();
-                } else if (scan_qos_profiles[i] == "besteffort") {
-                    scan_qos_profile_str = "besteffort";
+                } else if (scan_reliability_policies[i] == "besteffort") {
+                    scan_reliability_policy_str = "besteffort";
                     scan_qos_profile.best_effort();
                 } else {
-                    scan_qos_profile_str = "reliable";
+                    scan_reliability_policy_str = "reliable";
                     scan_qos_profile.reliable();
                 }
             } else {
-                scan_qos_profile_str = "reliable";
+                scan_reliability_policy_str = "reliable";
                 scan_qos_profile.reliable();
             }
 
-            RCLCPP_DEBUG(this->get_logger(), "Subscribing to scan topic '%s' with QoS profile '%s'", scan_topic.c_str(), scan_qos_profile_str.c_str());
+            RCLCPP_DEBUG(this->get_logger(), "Subscribing to scan topic '%s' with QoS profile '%s'", scan_topic.c_str(), scan_reliability_policy_str.c_str());
             laser_sub[i] = this->create_subscription<sensor_msgs::msg::LaserScan>(
                 scan_topic,
                 scan_qos_profile,
@@ -97,26 +97,26 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
         for (size_t i = 0; i < point_cloud_num; ++i)
         {
             const std::string &point_cloud_topic = point_cloud_topics[i];
-            std::string point_cloud_qos_profile_str;
+            std::string point_cloud_reliability_policy_str;
             rclcpp::QoS point_cloud_qos_profile = rclcpp::SensorDataQoS();
 
-            if (i < point_cloud_qos_profiles.size()) {
-                if (point_cloud_qos_profiles[i] == "reliable") {
-                    point_cloud_qos_profile_str = "reliable";
+            if (i < point_cloud_reliability_policies.size()) {
+                if (point_cloud_reliability_policies[i] == "reliable") {
+                    point_cloud_reliability_policy_str = "reliable";
                     point_cloud_qos_profile.reliable();
-                } else if (point_cloud_qos_profiles[i] == "besteffort") {
-                    point_cloud_qos_profile_str = "besteffort";
+                } else if (point_cloud_reliability_policies[i] == "besteffort") {
+                    point_cloud_reliability_policy_str = "besteffort";
                     point_cloud_qos_profile.best_effort();
                 } else {
-                    point_cloud_qos_profile_str = "reliable";
+                    point_cloud_reliability_policy_str = "reliable";
                     point_cloud_qos_profile.reliable();
                 }
             } else {
-                point_cloud_qos_profile_str = "reliable";
+                point_cloud_reliability_policy_str = "reliable";
                 point_cloud_qos_profile.reliable();
             }
 
-            RCLCPP_DEBUG(this->get_logger(), "Subscribing to point cloud topic '%s' with QoS profile '%s'", point_cloud_topic.c_str(), point_cloud_qos_profile_str.c_str());
+            RCLCPP_DEBUG(this->get_logger(), "Subscribing to point cloud topic '%s' with QoS profile '%s'", point_cloud_topic.c_str(), point_cloud_reliability_policy_str.c_str());
             point_cloud_sub[i] = this->create_subscription<sensor_msgs::msg::PointCloud2>(
                 point_cloud_topic,
                 point_cloud_qos_profile,
