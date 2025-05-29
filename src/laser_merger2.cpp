@@ -82,7 +82,7 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
                 scan_qos_profile.reliable();
             }
 
-            RCLCPP_DEBUG(this->get_logger(), "Subscribing to scan topic '%s' with QoS profile '%s'", scan_topic.c_str(), scan_reliability_policy_str.c_str());
+            RCLCPP_DEBUG(this->get_logger(), "Subscribing to scan topic '%s' with QoS reliability policy '%s'", scan_topic.c_str(), scan_reliability_policy_str.c_str());
             laser_sub[i] = this->create_subscription<sensor_msgs::msg::LaserScan>(
                 scan_topic,
                 scan_qos_profile,
@@ -116,7 +116,7 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
                 point_cloud_qos_profile.reliable();
             }
 
-            RCLCPP_DEBUG(this->get_logger(), "Subscribing to point cloud topic '%s' with QoS profile '%s'", point_cloud_topic.c_str(), point_cloud_reliability_policy_str.c_str());
+            RCLCPP_DEBUG(this->get_logger(), "Subscribing to point cloud topic '%s' with QoS reliability policy '%s'", point_cloud_topic.c_str(), point_cloud_reliability_policy_str.c_str());
             point_cloud_sub[i] = this->create_subscription<sensor_msgs::msg::PointCloud2>(
                 point_cloud_topic,
                 point_cloud_qos_profile,
