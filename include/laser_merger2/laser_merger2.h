@@ -90,15 +90,15 @@ class laser_merger2 : public rclcpp::Node
     std::vector<int64_t> point_cloud_depths;
     std::vector<std::string> point_cloud_durability_policies;
 
-    std::string  output_scan_reliability_policy_;
-    std::string  output_scan_history_policy_;
-    int64_t      output_scan_depth_;
-    std::string  output_scan_durability_policy_;
+    std::string output_scan_reliability_policy_;
+    std::string output_scan_history_policy_;
+    int64_t output_scan_depth_;
+    std::string output_scan_durability_policy_;
 
-    std::string  output_pointcloud_reliability_policy_;
-    std::string  output_pointcloud_history_policy_;
-    int64_t      output_pointcloud_depth_;
-    std::string  output_pointcloud_durability_policy_;
+    std::string output_pointcloud_reliability_policy_;
+    std::string output_pointcloud_history_policy_;
+    int64_t output_pointcloud_depth_;
+    std::string output_pointcloud_durability_policy_;
 
     double tolerance_;
     double rate_;

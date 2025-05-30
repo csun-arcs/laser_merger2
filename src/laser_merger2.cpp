@@ -25,12 +25,12 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
     this->declare_parameter<std::string>("output_scan_reliability_policy", "reliable");
     this->declare_parameter<std::string>("output_scan_history_policy", "KeepLast");
     this->declare_parameter<int64_t>("output_scan_depth", 20);
-    this->declare_parameter<std::string>("output_scan_durability_policy","volatile");
+    this->declare_parameter<std::string>("output_scan_durability_policy", "volatile");
 
     this->declare_parameter<std::string>("output_pointcloud_reliability_policy", "reliable");
     this->declare_parameter<std::string>("output_pointcloud_history_policy", "KeepLast");
     this->declare_parameter<int64_t>("output_pointcloud_depth", 20);
-    this->declare_parameter<std::string>("output_pointcloud_durability_policy","volatile");
+    this->declare_parameter<std::string>("output_pointcloud_durability_policy", "volatile");
 
     this->declare_parameter<double>("transform_tolerance", 0.01);
     this->declare_parameter<double>("rate", 30.0);
@@ -77,9 +77,6 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
     this->get_parameter("angle_increment", angle_increment);
     this->get_parameter("inf_epsilon", inf_epsilon);
     this->get_parameter("use_inf", use_inf);
-
-    // pclPub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("pointcloud", rclcpp::SystemDefaultsQoS());
-    // scanPub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::SystemDefaultsQoS());
 
     {
         // PointCloud publisher
