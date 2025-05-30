@@ -29,8 +29,14 @@ $ git clone https://github.com/qaz9517532846/laser_merger2.git
 | target_frame                       | target tf frame(Default: "base_link").                            |
 | scan_topics                        | List of topics on which to read the laser scans                   |
 | scan_reliability_policies          | List of QoS reliability policies per scan topic                   |
+| scan_history_policies              | List of QoS history policies per scan topic                       |
+| scan_depths                        | List of QoS depths per scan topic                                 |
+| scan_durability_policies           | List of QoS durability policies per scan topic                    |
 | point_cloud_topics                 | List of topics on which to read the point clouds (PointCloud2)    |
 | point_cloud_reliability_policies   | List of QoS reliability policies per point cloud topic            |
+| point_cloud_history_policies       | List of QoS history policies per point cloud topic                |
+| point_cloud_depths                 | List of QoS depths per point cloud topic                          |
+| point_cloud_durability_policies    | List of QoS durability policies per point cloud topic             |
 | transform_tolerance                | TF transform tolerance.                                           |
 | rate                               | Publish rate(Hz).                                                 |
 | queue_size                         | Subscribe queue size.                                             |
