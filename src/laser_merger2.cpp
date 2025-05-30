@@ -13,11 +13,17 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
     this->declare_parameter<std::string>("target_frame", "base_link");
     this->declare_parameter<std::vector<std::string>>("scan_topics", { "/sick_s30b/laser/scan0", "/sick_s30b/laser/scan1" });
     this->declare_parameter<std::vector<std::string>>("scan_reliability_policies", { "reliable", "reliable" });
+    this->declare_parameter<std::vector<std::string>>("scan_history_policies", {"KeepLast","KeepLast"});
+    this->declare_parameter<std::vector<int64_t>>("scan_depths", {20,20});
+    this->declare_parameter<std::vector<std::string>>("scan_durability_policies", {"volatile","volatile"});
     this->declare_parameter<std::vector<std::string>>("point_cloud_topics", { "/sick_s30b/laser/points0", "/sick_s30b/laser/points1" });
     this->declare_parameter<std::vector<std::string>>("point_cloud_reliability_policies", { "reliable", "reliable" });
+    this->declare_parameter<std::vector<std::string>>("point_cloud_history_policies", {"KeepLast","KeepLast"});
+    this->declare_parameter<std::vector<int64_t>>("point_cloud_depths", {20,20});
+    this->declare_parameter<std::vector<std::string>>("point_cloud_durability_policies", {"volatile","volatile"});
+
     this->declare_parameter<double>("transform_tolerance", 0.01);
     this->declare_parameter<double>("rate", 30.0);
-    this->declare_parameter<int>("queue_size", 20);
 
     this->declare_parameter<double>("max_range", 30.0);
     this->declare_parameter<double>("min_range", 0.06);
@@ -31,11 +37,16 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
     this->get_parameter("target_frame", target_frame_);
     this->get_parameter("scan_topics", scan_topics);
     this->get_parameter("scan_reliability_policies", scan_reliability_policies);
+    this->get_parameter("scan_history_policies", scan_history_policies);
+    this->get_parameter("scan_depths", scan_depths);
+    this->get_parameter("scan_durability_policies", scan_durability_policies);
     this->get_parameter("point_cloud_topics", point_cloud_topics);
     this->get_parameter("point_cloud_reliability_policies", point_cloud_reliability_policies);
+    this->get_parameter("point_cloud_history_policies", point_cloud_history_policies);
+    this->get_parameter("point_cloud_depths", point_cloud_depths);
+    this->get_parameter("point_cloud_durability_policies", point_cloud_durability_policies);
     this->get_parameter("transform_tolerance", tolerance_);
     this->get_parameter("rate", rate_);
-    this->get_parameter("queue_size", input_queue_size_);
 
     this->get_parameter("max_range", max_range);
     this->get_parameter("min_range", min_range);
@@ -46,8 +57,8 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
     this->get_parameter("inf_epsilon", inf_epsilon);
     this->get_parameter("use_inf", use_inf);
 
-    pclPub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("pointcloud", input_queue_size_);
-    scanPub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", input_queue_size_);
+    pclPub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("pointcloud", rclcpp::SystemDefaultsQoS());
+    scanPub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::SystemDefaultsQoS());
 
     rosRate = std::make_shared<rclcpp::Rate>(rate_);
 
@@ -58,70 +69,78 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
 
     if (!target_frame_.empty())
     {
-        size_t laser_num = scan_topics.size();
-        laser_sub.resize(laser_num);
-        for (size_t i = 0; i < laser_num; ++i)
-        {
-            const std::string &scan_topic = scan_topics[i];
-            std::string scan_reliability_policy_str;
-            rclcpp::QoS scan_qos_profile = rclcpp::SensorDataQoS();
+        // Scan subscriptions
+        laser_sub.resize(scan_topics.size());
+        for (size_t i = 0; i < scan_topics.size(); ++i) {
+            const auto &topic = scan_topics[i];
+            if (topic.empty()) continue;  // skip empty topic names
 
-            if (i < scan_reliability_policies.size()) {
-                if (scan_reliability_policies[i] == "reliable") {
-                    scan_reliability_policy_str = "reliable";
-                    scan_qos_profile.reliable();
-                } else if (scan_reliability_policies[i] == "besteffort") {
-                    scan_reliability_policy_str = "besteffort";
-                    scan_qos_profile.best_effort();
-                } else {
-                    scan_reliability_policy_str = "reliable";
-                    scan_qos_profile.reliable();
-                }
-            } else {
-                scan_reliability_policy_str = "reliable";
-                scan_qos_profile.reliable();
-            }
+            // Reliability
+            std::string rel = (i < scan_reliability_policies.size() ? scan_reliability_policies[i] : "reliable");
+            if (rel.empty()) rel = "reliable";
+            // History
+            std::string hist = (i < scan_history_policies.size() ? scan_history_policies[i] : "KeepLast");
+            if (hist.empty()) rel = "KeepLast";
+            // Depth
+            int64_t raw_depth = (i < scan_depths.size() ? scan_depths[i] : 20);
+            size_t depth = raw_depth > 0 ? static_cast<size_t>(raw_depth) : 20;
+            // Durability
+            std::string dur = (i < scan_durability_policies.size() ? scan_durability_policies[i] : "volatile");
+            if (dur.empty()) rel = "volatile";
 
-            RCLCPP_DEBUG(this->get_logger(), "Subscribing to scan topic '%s' with QoS reliability policy '%s'", scan_topic.c_str(), scan_reliability_policy_str.c_str());
+            // Build QoS
+            rclcpp::QoS qos(depth);
+            if (hist == "KeepAll") qos.keep_all(); else qos.keep_last(depth);
+            if (rel == "reliable") qos.reliable(); else qos.best_effort();
+            if (dur == "transient_local") qos.transient_local(); else qos.durability_volatile();
+
+            RCLCPP_DEBUG(
+                this->get_logger(),
+                "Subscribing to laser scan '%s' with QoS profile: Reliability Policy='%s' History Policy='%s' Depth='%zu' Durability Policy='%s'",
+                scan_topics[i].c_str(), rel.c_str(), hist.c_str(), depth, dur.c_str()
+            );
+
             laser_sub[i] = this->create_subscription<sensor_msgs::msg::LaserScan>(
-                scan_topic,
-                scan_qos_profile,
-                [this](const sensor_msgs::msg::LaserScan::SharedPtr msg) {
-                    scanCallback(msg);
-                }
+                scan_topics[i], qos,
+                [this](const sensor_msgs::msg::LaserScan::SharedPtr msg) { scanCallback(msg); }
             );
         }
 
-        size_t point_cloud_num = point_cloud_topics.size();
-        point_cloud_sub.resize(point_cloud_num);
-        for (size_t i = 0; i < point_cloud_num; ++i)
-        {
-            const std::string &point_cloud_topic = point_cloud_topics[i];
-            std::string point_cloud_reliability_policy_str;
-            rclcpp::QoS point_cloud_qos_profile = rclcpp::SensorDataQoS();
+        // PointCloud subscriptions
+        point_cloud_sub.resize(point_cloud_topics.size());
+        for (size_t i = 0; i < point_cloud_topics.size(); ++i) {
+            const auto &topic = point_cloud_topics[i];
+            if (topic.empty()) continue;  // skip empty topic names
 
-            if (i < point_cloud_reliability_policies.size()) {
-                if (point_cloud_reliability_policies[i] == "reliable") {
-                    point_cloud_reliability_policy_str = "reliable";
-                    point_cloud_qos_profile.reliable();
-                } else if (point_cloud_reliability_policies[i] == "besteffort") {
-                    point_cloud_reliability_policy_str = "besteffort";
-                    point_cloud_qos_profile.best_effort();
-                } else {
-                    point_cloud_reliability_policy_str = "reliable";
-                    point_cloud_qos_profile.reliable();
-                }
-            } else {
-                point_cloud_reliability_policy_str = "reliable";
-                point_cloud_qos_profile.reliable();
-            }
+            // Reliability
+            std::string rel = (i < point_cloud_reliability_policies.size() ? point_cloud_reliability_policies[i] : "reliable");
+            if (rel.empty()) rel = "reliable";
+            // History
+            std::string hist = (i < point_cloud_history_policies.size() ? point_cloud_history_policies[i] : "KeepLast");
+            if (hist.empty()) rel = "KeepLast";
+            // Depth
+            int64_t raw_depth = (i < scan_depths.size() ? scan_depths[i] : 20);
+            size_t depth = raw_depth > 0 ? static_cast<size_t>(raw_depth) : 20;
+            // Durability
+            std::string dur = (i < point_cloud_durability_policies.size() ? point_cloud_durability_policies[i] : "volatile");
+            if (dur.empty()) rel = "volatile";
 
-            RCLCPP_DEBUG(this->get_logger(), "Subscribing to point cloud topic '%s' with QoS reliability policy '%s'", point_cloud_topic.c_str(), point_cloud_reliability_policy_str.c_str());
+            // Build QoS
+            rclcpp::QoS qos(depth);
+            if (hist == "KeepAll")  qos.keep_all(); else qos.keep_last(depth);
+            if (rel == "reliable")  qos.reliable(); else qos.best_effort();
+            if (dur == "transient_local") qos.transient_local(); else qos.durability_volatile();
+
+            RCLCPP_DEBUG(
+                this->get_logger(),
+                "Subscribing to '%s' with QoS profile: Reliability Policy='%s' History Policy='%s' Depth='%zu' Durability Policy='%s'",
+                point_cloud_topics[i].c_str(), rel.c_str(), hist.c_str(), depth, dur.c_str()
+            );
+
             point_cloud_sub[i] = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-                point_cloud_topic,
-                point_cloud_qos_profile,
+                point_cloud_topics[i], qos,
                 [this](const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
-                    pointCloudCallback(msg);
+                pointCloudCallback(msg);
                 }
             );
         }

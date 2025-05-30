@@ -17,11 +17,16 @@ def generate_launch_description():
     # In the code, we simply ignore empty topic names.
     scan_topics = LaunchConfiguration('scan_topics', default="['']")
     scan_reliability_policies = LaunchConfiguration('scan_reliability_policies', default="['']")
+    scan_history_policies = LaunchConfiguration('scan_history_policies', default="['']")
+    scan_depths = LaunchConfiguration('scan_depths', default="[0]")
+    scan_durability_policies = LaunchConfiguration('scan_durability_policies', default="['']")
     point_cloud_topics = LaunchConfiguration('point_cloud_topics', default="['']")
     point_cloud_reliability_policies = LaunchConfiguration('point_cloud_reliability_policies', default="['']")
+    point_cloud_history_policies = LaunchConfiguration('point_cloud_history_policies', default="['']")
+    point_cloud_depths = LaunchConfiguration('point_cloud_depths', default="[0]")
+    point_cloud_durability_policies = LaunchConfiguration('point_cloud_durability_policies', default="['']")
     transform_tolerance = LaunchConfiguration('transform_tolerance', default=0.1)
     rate = LaunchConfiguration('rate', default=30.0)
-    queue_size = LaunchConfiguration('queue_size', default=10)
     max_range = LaunchConfiguration('max_range', default=30.0)
     min_range = LaunchConfiguration('min_range', default=0.06)
     max_angle = LaunchConfiguration('max_angle', default=3.141592654)
@@ -43,11 +48,16 @@ def generate_launch_description():
             parameters=[{'target_frame': target_frame},
                         {'scan_topics': scan_topics},
                         {'scan_reliability_policies': scan_reliability_policies},
+                        {'scan_history_policies': scan_history_policies},
+                        {'scan_depths': scan_depths},
+                        {'scan_durability_policies': scan_durability_policies},
                         {'point_cloud_topics': point_cloud_topics},
                         {'point_cloud_reliability_policies': point_cloud_reliability_policies},
+                        {'point_cloud_history_policies': point_cloud_history_policies},
+                        {'point_cloud_depths': point_cloud_depths},
+                        {'point_cloud_durability_policies': point_cloud_durability_policies},
                         {'transform_tolerance': transform_tolerance},
                         {'rate': rate},
-                        {'queue_size': queue_size},
                         {'max_range': max_range},
                         {'min_range': min_range},
                         {'max_angle': max_angle},

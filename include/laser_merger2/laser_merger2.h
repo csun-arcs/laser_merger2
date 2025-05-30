@@ -81,11 +81,16 @@ class laser_merger2 : public rclcpp::Node
     std::string target_frame_;
     std::vector<std::string> scan_topics;
     std::vector<std::string> scan_reliability_policies;
+    std::vector<std::string> scan_history_policies;
+    std::vector<int64_t> scan_depths;
+    std::vector<std::string> scan_durability_policies;
     std::vector<std::string> point_cloud_topics;
     std::vector<std::string> point_cloud_reliability_policies;
+    std::vector<std::string> point_cloud_history_policies;
+    std::vector<int64_t> point_cloud_depths;
+    std::vector<std::string> point_cloud_durability_policies;
     double tolerance_;
     double rate_;
-    int input_queue_size_;
     int subscription_count;
 
     double max_range;
