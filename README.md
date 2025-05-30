@@ -39,7 +39,6 @@ $ git clone https://github.com/qaz9517532846/laser_merger2.git
 | point_cloud_durability_policies    | List of QoS durability policies per point cloud topic             |
 | transform_tolerance                | TF transform tolerance.                                           |
 | rate                               | Publish rate(Hz).                                                 |
-| queue_size                         | Subscribe queue size.                                             |
 | max_range                          | Merge laser scan max range.                                       |
 | min_range                          | Merge laser scan min range.                                       |
 | max_angle                          | Merge laser scan max angle.                                       |
