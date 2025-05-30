@@ -22,6 +22,16 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
     this->declare_parameter<std::vector<int64_t>>("point_cloud_depths", {20,20});
     this->declare_parameter<std::vector<std::string>>("point_cloud_durability_policies", {"volatile","volatile"});
 
+    this->declare_parameter<std::string>("output_scan_reliability_policy", "reliable");
+    this->declare_parameter<std::string>("output_scan_history_policy", "KeepLast");
+    this->declare_parameter<int64_t>("output_scan_depth", 20);
+    this->declare_parameter<std::string>("output_scan_durability_policy","volatile");
+
+    this->declare_parameter<std::string>("output_pointcloud_reliability_policy", "reliable");
+    this->declare_parameter<std::string>("output_pointcloud_history_policy", "KeepLast");
+    this->declare_parameter<int64_t>("output_pointcloud_depth", 20);
+    this->declare_parameter<std::string>("output_pointcloud_durability_policy","volatile");
+
     this->declare_parameter<double>("transform_tolerance", 0.01);
     this->declare_parameter<double>("rate", 30.0);
 
@@ -45,6 +55,17 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
     this->get_parameter("point_cloud_history_policies", point_cloud_history_policies);
     this->get_parameter("point_cloud_depths", point_cloud_depths);
     this->get_parameter("point_cloud_durability_policies", point_cloud_durability_policies);
+
+    this->get_parameter("output_pointcloud_reliability_policy",output_pointcloud_reliability_policy_);
+    this->get_parameter("output_pointcloud_history_policy", output_pointcloud_history_policy_);
+    this->get_parameter("output_pointcloud_depth", output_pointcloud_depth_);
+    this->get_parameter("output_pointcloud_durability_policy", output_pointcloud_durability_policy_);
+
+    this->get_parameter("output_scan_reliability_policy",output_scan_reliability_policy_);
+    this->get_parameter("output_scan_history_policy", output_scan_history_policy_);
+    this->get_parameter("output_scan_depth", output_scan_depth_);
+    this->get_parameter("output_scan_durability_policy", output_scan_durability_policy_);
+
     this->get_parameter("transform_tolerance", tolerance_);
     this->get_parameter("rate", rate_);
 
@@ -57,8 +78,38 @@ laser_merger2::laser_merger2() : Node("laser_merger2")
     this->get_parameter("inf_epsilon", inf_epsilon);
     this->get_parameter("use_inf", use_inf);
 
-    pclPub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("pointcloud", rclcpp::SystemDefaultsQoS());
-    scanPub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::SystemDefaultsQoS());
+    // pclPub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("pointcloud", rclcpp::SystemDefaultsQoS());
+    // scanPub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::SystemDefaultsQoS());
+
+    {
+        // PointCloud publisher
+        std::string rel = output_pointcloud_reliability_policy_.empty() ? "reliable" : output_pointcloud_reliability_policy_;
+        std::string hist = output_pointcloud_history_policy_.empty() ? "KeepLast" : output_pointcloud_history_policy_;
+        size_t depth = output_pointcloud_depth_ > 0 ? static_cast<size_t>(output_pointcloud_depth_) : 20;
+        std::string dur = output_pointcloud_durability_policy_.empty() ? "volatile" : output_pointcloud_durability_policy_;
+
+        rclcpp::QoS qos(depth);
+        if (hist == "KeepAll") qos.keep_all(); else qos.keep_last(depth);
+        if (rel == "reliable") qos.reliable(); else qos.best_effort();
+        if (dur == "transient_local") qos.transient_local(); else qos.durability_volatile();
+
+        pclPub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("pointcloud", qos);
+    }
+
+    {
+        // Scan publisher
+        std::string rel = output_scan_reliability_policy_.empty() ? "reliable" : output_scan_reliability_policy_;
+        std::string hist = output_scan_history_policy_.empty() ? "KeepLast" : output_scan_history_policy_;
+        size_t depth = output_scan_depth_ > 0 ? static_cast<size_t>(output_scan_depth_) : 20;
+        std::string dur = output_scan_durability_policy_.empty() ? "volatile" : output_scan_durability_policy_;
+
+        rclcpp::QoS qos(depth);
+        if (hist == "KeepAll") qos.keep_all(); else qos.keep_last(depth);
+        if (rel == "reliable") qos.reliable(); else qos.best_effort();
+        if (dur == "transient_local") qos.transient_local(); else qos.durability_volatile();
+
+        scanPub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", qos);
+    }
 
     rosRate = std::make_shared<rclcpp::Rate>(rate_);
 

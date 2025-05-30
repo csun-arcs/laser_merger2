@@ -25,6 +25,14 @@ def generate_launch_description():
     point_cloud_history_policies = LaunchConfiguration('point_cloud_history_policies', default="['']")
     point_cloud_depths = LaunchConfiguration('point_cloud_depths', default="[0]")
     point_cloud_durability_policies = LaunchConfiguration('point_cloud_durability_policies', default="['']")
+    output_scan_reliability_policy = LaunchConfiguration('output_scan_reliability_policy', default="''")
+    output_scan_history_policy = LaunchConfiguration('output_scan_history_policy', default="''")
+    output_scan_depth = LaunchConfiguration('output_scan_depth', default="0")
+    output_scan_durability_policy = LaunchConfiguration('output_scan_durability_policy', default="''")
+    output_point_cloud_reliability_policy = LaunchConfiguration('output_scan_reliability_policy', default="''")
+    output_point_cloud_history_policy = LaunchConfiguration('output_point_cloud_history_policy', default="''")
+    output_point_cloud_depth = LaunchConfiguration('output_point_cloud_depth', default="0")
+    output_point_cloud_durability_policy = LaunchConfiguration('output_point_cloud_durability_policy', default="''")
     transform_tolerance = LaunchConfiguration('transform_tolerance', default=0.1)
     rate = LaunchConfiguration('rate', default=30.0)
     max_range = LaunchConfiguration('max_range', default=30.0)
@@ -56,6 +64,14 @@ def generate_launch_description():
                         {'point_cloud_history_policies': point_cloud_history_policies},
                         {'point_cloud_depths': point_cloud_depths},
                         {'point_cloud_durability_policies': point_cloud_durability_policies},
+                        {'output_scan_reliability_policy': output_scan_reliability_policy},
+                        {'output_scan_history_policy': output_scan_history_policy},
+                        {'output_scan_depth': output_scan_depth},
+                        {'output_scan_durability_policy': output_scan_durability_policy},
+                        {'output_point_cloud_reliability_policy': output_point_cloud_reliability_policy},
+                        {'output_point_cloud_history_policy': output_point_cloud_history_policy},
+                        {'output_point_cloud_depth': output_point_cloud_depth},
+                        {'output_point_cloud_durability_policy': output_point_cloud_durability_policy},
                         {'transform_tolerance': transform_tolerance},
                         {'rate': rate},
                         {'max_range': max_range},
