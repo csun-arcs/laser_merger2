@@ -11,11 +11,30 @@ from launch.substitutions import ThisLaunchFileDir
 
 def generate_launch_description():
     target_frame = LaunchConfiguration('target_frame', default='base_link')
-    scan_topics = LaunchConfiguration('scan_topics', default=["/sick_s30b/laser/scan0", "/sick_s30b/laser/scan1"])
-    qos_profiles = LaunchConfiguration('qos_profiles', default=["reliable", "reliable"])
+    # We set the topic arrays to a default value of an array containing an empty string, because
+    # ROS2 does not yet allow empty sequences for both launch arguments (cf https://github.com/ros2/launch_ros/blob/humble/launch_ros/launch_ros/utilities/evaluate_parameters.py#L50)
+    # and rclcpp parameters (cf https://github.com/ros2/rclcpp/issues/1955).
+    # In the code, we simply ignore empty topic names.
+    scan_topics = LaunchConfiguration('scan_topics', default="['']")
+    scan_reliability_policies = LaunchConfiguration('scan_reliability_policies', default="['']")
+    scan_history_policies = LaunchConfiguration('scan_history_policies', default="['']")
+    scan_depths = LaunchConfiguration('scan_depths', default="[0]")
+    scan_durability_policies = LaunchConfiguration('scan_durability_policies', default="['']")
+    point_cloud_topics = LaunchConfiguration('point_cloud_topics', default="['']")
+    point_cloud_reliability_policies = LaunchConfiguration('point_cloud_reliability_policies', default="['']")
+    point_cloud_history_policies = LaunchConfiguration('point_cloud_history_policies', default="['']")
+    point_cloud_depths = LaunchConfiguration('point_cloud_depths', default="[0]")
+    point_cloud_durability_policies = LaunchConfiguration('point_cloud_durability_policies', default="['']")
+    output_scan_reliability_policy = LaunchConfiguration('output_scan_reliability_policy', default="''")
+    output_scan_history_policy = LaunchConfiguration('output_scan_history_policy', default="''")
+    output_scan_depth = LaunchConfiguration('output_scan_depth', default="0")
+    output_scan_durability_policy = LaunchConfiguration('output_scan_durability_policy', default="''")
+    output_point_cloud_reliability_policy = LaunchConfiguration('output_scan_reliability_policy', default="''")
+    output_point_cloud_history_policy = LaunchConfiguration('output_point_cloud_history_policy', default="''")
+    output_point_cloud_depth = LaunchConfiguration('output_point_cloud_depth', default="0")
+    output_point_cloud_durability_policy = LaunchConfiguration('output_point_cloud_durability_policy', default="''")
     transform_tolerance = LaunchConfiguration('transform_tolerance', default=0.1)
     rate = LaunchConfiguration('rate', default=30.0)
-    queue_size = LaunchConfiguration('queue_size', default=10)
     max_range = LaunchConfiguration('max_range', default=30.0)
     min_range = LaunchConfiguration('min_range', default=0.06)
     max_angle = LaunchConfiguration('max_angle', default=3.141592654)
@@ -36,10 +55,25 @@ def generate_launch_description():
             output='screen',
             parameters=[{'target_frame': target_frame},
                         {'scan_topics': scan_topics},
-                        {'qos_profiles': qos_profiles},
+                        {'scan_reliability_policies': scan_reliability_policies},
+                        {'scan_history_policies': scan_history_policies},
+                        {'scan_depths': scan_depths},
+                        {'scan_durability_policies': scan_durability_policies},
+                        {'point_cloud_topics': point_cloud_topics},
+                        {'point_cloud_reliability_policies': point_cloud_reliability_policies},
+                        {'point_cloud_history_policies': point_cloud_history_policies},
+                        {'point_cloud_depths': point_cloud_depths},
+                        {'point_cloud_durability_policies': point_cloud_durability_policies},
+                        {'output_scan_reliability_policy': output_scan_reliability_policy},
+                        {'output_scan_history_policy': output_scan_history_policy},
+                        {'output_scan_depth': output_scan_depth},
+                        {'output_scan_durability_policy': output_scan_durability_policy},
+                        {'output_point_cloud_reliability_policy': output_point_cloud_reliability_policy},
+                        {'output_point_cloud_history_policy': output_point_cloud_history_policy},
+                        {'output_point_cloud_depth': output_point_cloud_depth},
+                        {'output_point_cloud_durability_policy': output_point_cloud_durability_policy},
                         {'transform_tolerance': transform_tolerance},
                         {'rate': rate},
-                        {'queue_size': queue_size},
                         {'max_range': max_range},
                         {'min_range': min_range},
                         {'max_angle': max_angle},
